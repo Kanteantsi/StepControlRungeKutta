@@ -11,3 +11,7 @@ For controlling step by accuracy user can build function with Eiler Method as th
 pattern above.
 
 User determines the predicate function for ending integration.
+
+Program compares establishing method, bisection method and 
+Esposito-Based method of searching switching point in hybrid system, 
+written as ODE

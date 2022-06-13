@@ -612,4 +612,184 @@ ylabel("argument")
 xlabel("t")
 grid(True)
 show() # display
-#'''#Метод Эспосито
+#'''#Esposito method end
+
+
+
+#Bisection part start
+
+hn = 0.001
+
+Aklinnonlin = Matrix([[k, 1], [0, -0.5]])
+
+dydxbisect = zeros(matrix_size, 1)
+
+print(dydxbisect)
+
+xstartswitchpoint = Matrix([[5.], [5.]])
+
+
+def dxdt_y(Aklinnonlin, xstartswitchpoint, b2x2):
+
+    dydxbisect[0, 0] = xstartswitchpoint[1, 0]
+    dydxbisect[1, 0] = -1 * Aklinnonlin[0, 0] * (xstartswitchpoint[1, 0]) - 9.81  ##Vy' = -k*Vy-g
+    return dydxbisect
+
+
+k1 = zeros(matrix_size, 1)
+k2 = zeros(matrix_size, 1)
+k3 = zeros(matrix_size, 1)
+k2k1norm = zeros(matrix_size, 1)
+
+
+xprint_s_bisect2 = Matrix([5.,5.])
+xstartswitchpoint2 = Matrix([5.,5.])
+iterations2 = 0
+matrix_size = 2
+t2 = 0
+
+def predicate_function_linear_xsecond(xstart,eps):
+    return float(xstart[0]) < 0 + eps
+
+
+
+start_time = datetime.now()
+while True:  # Integrate
+    for i in (range(matrix_size)):
+        iterations2 += 1
+        k1[i, 0] = hn * dxdt_y(Aklinnonlin, xstartswitchpoint2, b2x2)[i, 0]
+        k2[i, 0] = hn * dxdt_y(
+            Aklinnonlin,
+            xstartswitchpoint2 + k1[i, 0] * sympy.ones(*xstartswitchpoint2.shape),
+            b2x2,
+        )[i, 0]
+        xstartswitchpoint2[i, 0] = xstartswitchpoint2[i, 0] + 0.5 * (k1[i, 0] + k2[i, 0])
+        xprint_s_bisect2 = xprint_s_bisect2.col_insert(1, Matrix([xstartswitchpoint2]))
+    dxdt_y(Aklinnonlin, xstartswitchpoint2, b2x2)
+    print("Integrated parameter, Runge-Kutta",xstartswitchpoint2)
+    print(t2)
+
+    t2 += hn
+    if predicate_function_linear_xsecond(xstartswitchpoint2,epsilon_eiler_second_angle_ball/1000):
+        '''
+        iterations += 1
+        xprint_s_bisect = xprint_s_bisect.col_insert(1, Matrix([xstartswitchpoint]))
+        for i, number in enumerate(range(matrix_size)):
+            k1[i, 0] = hn * dxdt_y(Aklinnonlin, xstartswitchpoint, b2x2)[i, 0]
+            k2[i, 0] = hn * dxdt_y(
+                Aklinnonlin,
+                xstartswitchpoint + k1[i, 0] * sympy.ones(*xstartswitchpoint.shape),
+                b2x2,
+            )[i, 0]
+            xstartswitchpoint[i, 0] = xstartswitchpoint[i, 0] + 0.5 * (k1[i, 0] + k2[i, 0])
+        dxdt_y(Aklinnonlin, xstartswitchpoint, b2x2)
+        t += hn
+        '''
+        break
+    end_time = datetime.now()
+    print('Duration Bisection: {}'.format(end_time - start_time))
+
+
+xprint_s_bisect2.col_del(0)  # Delete first column
+
+argument1 = list(reversed(xprint_s_bisect2.row(0)))
+argument2 = list(reversed(xprint_s_bisect2.row(1)))
+
+t = linspace(0, t2, iterations2)
+
+
+
+title('Bisection falling ball')
+plot(t, argument1, '-o', linewidth=2)
+plot(t, argument2, '-o', linewidth=2)
+legend(["y", "Vy"], loc ="upper right")
+print()
+ylabel("argument")
+xlabel("t")
+grid(True)
+show() # display
+
+'''     #Bisection localization
+
+print('End time', t)
+eps = epsilon_eiler_second_angle_ball
+tmax = t
+tmin = t - hn
+hnew = (tmax - tmin) / 2
+tmiddle = tmin + hnew
+
+xleft = xprint_s_bisect2.col(1)   #change to numpy pattern
+xright = xprint_s_bisect2.col(0)  #change to numpy pattern
+
+xmiddle = zeros(matrix_size, 1)
+
+# print("X слева",xleft)                  
+# print("X справа",xright)                 
+# print("T слева",tmin)
+# print("T посередине",tmiddle)
+# print("T справа",tmax)
+
+def bisectionrk(xleft, xmiddle, xright, hnew, tleft, tmiddle, tright, eps):
+    while (tmiddle - tleft) > eps or (tright - tmiddle) > eps:
+        # while (tmiddle - tleft) >= eps:
+
+        # print()
+        # print(f"Before values {'Слева ', xleft[0, 0]} {'Посередине ', xmiddle[0, 0]} {'Справа ', xright[0, 0]}")
+        # print(
+        #    f"Before values {'Слева ', predfunc(xleft)} {'Посередине ', predfunc(xmiddle)} {'Справа ', predfunc(xright)}")
+        # print()
+
+        for i in range(matrix_size):
+            k1[i, 0] = hnew * dxdt_y(Aklinnonlin, xleft, b2x2)[i, 0]
+            k2[i, 0] = (
+                    hnew
+                    * dxdt_y(
+                Aklinnonlin, xleft + k1[i, 0] * sympy.ones(*xleft.shape), b2x2
+            )[i, 0]
+            )
+            xmiddle[i, 0] = xleft[i, 0] + 0.5 * (k1[i, 0] + k2[i, 0])
+        dxdt_y(Aklinnonlin, xmiddle, b2x2)
+
+        if predfunc(xmiddle) == True:
+            if predfunc(xleft) == False and (tmiddle - tleft) <= eps:
+                return xmiddle
+            elif ((tmiddle - tleft) > eps):
+                hnew = (tmiddle - tleft) / 2  
+                tright = tmiddle  
+                tmiddle = (
+                        tleft + hnew
+                ) 
+                xright = xmiddle 
+                bisectionrk(
+                    xleft, xmiddle, xright, hnew, tleft, tmiddle, tright, eps
+                )
+            elif (predfunc(xleft) == True):
+                print(Localization is impossible")
+                break;
+
+        elif predfunc(xmiddle) == False:
+            if predfunc(xright) == True and (tright - tmiddle) <= eps:
+                return xright
+            elif (tright - tmiddle) > eps:
+                hnew = (tright - tmiddle) / 2 
+                tleft = tmiddle  
+                tmiddle = tmiddle + hnew  
+                xleft = xmiddle  
+                bisectionrk(
+                    xleft, xmiddle, xright, hnew, tleft, tmiddle, tright, eps
+                )
+            elif (predfunc(xright) == False):
+                # print("I am 4")
+                print("Localization is impossible")
+                break;
+
+    if (tmiddle - tleft) < eps and predfunc(xmiddle):
+        return xmiddle, tmiddle
+    elif (tright - tmiddle) < eps and predfunc(xright):
+        return xright, tright
+
+startingpointx,switchtime = bisectionrk(xleft, xmiddle, xright, hnew, tmin, tmiddle, tmax, eps)
+print("Final localization point, x = ", startingpointx, 't = ',switchtime)
+
+
+'''#Bisection part end
