@@ -30,6 +30,8 @@ def predicate_function_establ(xstart,eps):
     return False
 
 
+
+
 J = sympy.Function('J')(x, y, z)
 
 
@@ -82,8 +84,10 @@ print('Шаг по устойчивости',hstability)
 
 def rkf2stepcontrol(
         matrix_size,
-        # k1,k2,k3,k2k1norm,
-        dydx, A, x, b, dxdt, hn, t, tout, eps, predicate_func, MatrixForYacobian, hstabilitygetting, halgebraic):
+        dydx, A, x, b, dxdt, hn, t,
+        tout, eps, predicate_func,
+        MatrixForYacobian, hstabilitygetting, halgebraic,esposito_on):
+
     iterations = 0
     endtime = 0
     with open(__file__ + 'OutputRungeKutta2.txt', 'w') as f:
@@ -99,10 +103,21 @@ def rkf2stepcontrol(
         k3 = numpy.zeros((matrix_size, 1))
         k2k1norm = numpy.zeros((matrix_size, 1))
 
-        while ((predicate_func(x, eps) == False) or (t - tout > eps)):
+        stability_criterion_array = []
+        stability_criterion_array_numpy = numpy.zeros((matrix_size, 1))
+        h_accuracy = 0
+        h_stability = 0
+        steps = [h_accuracy, h_stability, halgebraic]
+
+
+        while not predicate_func(x, eps):
+            if (esposito_on == False):
+                if t - tout > eps:
+                    break
+
             b = t
             iterations += 1
-            print("Я вошёл в ", x)
+            print("I am inside ", x)
 
             xprint_s = numpy.c_[xprint_s, x]
             k1 = hn * dxdt(A, x, b)
@@ -115,30 +130,51 @@ def rkf2stepcontrol(
             for i in (range(matrix_size)):
                 x[i, 0] = x[i, 0] + 0.5 * (k1[i, 0] + k2[i, 0])
 
+            t += hn
+
             hstability = 0
             hacc = 0
+            h_accuracy = 0
             hbuffer = 0
 
             norm = float(0.5 * (k2 - k1).norm())
-            if (0.5 * (k2 - k1).norm()) < eps:
-                hstability = hstabilitygetting(MatrixForYacobian, x)
+
+            # Next stage calculating
+
+            if (0.5 * (k2 - k1).norm()) < eps and iterations >1:
+                #hstability = hstabilitygetting(MatrixForYacobian, x)
                 #print("New stability step", hstability)
                 # MatrixForYacobian
+                for i in range(matrix_size):
+                    k3[i, 0] = hn * dxdt(A, x, b)[i, 0]
+
+                for i in range(matrix_size):
+
+                    stability_criterion_array_numpy[i,0] = abs(float(k3[i, 0] - k2[i, 0])) / abs(float(k2[i, 0] - k1[i, 0]))
+
+                #'''
+                if not (2*max(stability_criterion_array_numpy) <= 2):
+                    hstability = hstabilitygetting(MatrixForYacobian, x)
+                    steps[1] = hstability
+                    #time.sleep(0.5)
+                #'''
+
 
             elif (norm >= eps):  # Recalculate accuracy step
             #if (True):
+                #h_stab = hstability
+
                 hneeded = sympy.symbols('hn')
 
                 j = 0
 
-                for j in range(matrix_size):  # автоматический подсчёт разности компонент
+                for j in range(matrix_size):  # Automatic substitution
 
                     # k2k1norm[j, 0] = float(dxdt(dydx, A, x + k1[i, 0] * sympy.ones(*x.shape), b)[j, 0]) - float(dxdt(dydx, A, x, b)[j, 0])
                     k2k1norm[j, 0] = float(dxdt(A, x + k1[i, 0] * numpy.ones(x.shape,dtype=float,order='C'), b)[j, 0]) - \
                                      float(dxdt(A, x, b)[j, 0])
 
                 epspart = str(2 * eps)
-                #print("Норма матрицы",k2k1norm)
 
                 equationstring = 'sqrt ('
                 i = 0
@@ -150,48 +186,36 @@ def rkf2stepcontrol(
                     equationstring = equationstring + '(hn*' + str(
                         k2k1norm[i,0]) + ')**2'
                     i += 1
+
                 equationstring = equationstring + ') - ' + epspart
                 #print(equationstring, 'Equation')
                 hacc = sympy.solveset(equationstring, hneeded)
 
-                hacclist = list(hacc)
-                #for i in range(len(hacclist)):
-                    #print("Значение", hacclist[i])
-
                 if hacc.is_empty == True:
-                    hbuffer = hn
+                    print("Accuracy step can't be found")
+                    #time.sleep(3)
                 elif (hacc.sup) <= 0:
-                    hbuffer = 0.000001
-                #    print("Accuracy step is zero or negative")
-                elif ((hacc.sup) <= 0.0000000001):
-                    hbuffer = 0.000001
-                else:
-                    hbuffer = float(max(hacc))
+                #    hbuffer = 0.000001
+                    print("Accuracy step is zero or negative")
+                    #time.sleep(3)
 
-                #print(float(max(hacc)), 'Шаг по точности')
+                h_accuracy = float(max(hacc))
+                #print("Recalculating accuracy step", h_accuracy)
+                steps[0] = h_accuracy
+                #time.sleep(2)
 
-                hn = hbuffer
-                # print(float(hacc))
+            #print("Current steps",steps)
+            #print("Шаги", h_accuracy, hstability, halgebraic)
+            hn = (min(n for n in steps  if n>0))
+            #print("Final current step", hn)
 
-            hn = min(halgebraic, hn)  # Minimal step from old step and step by event function
-            #print('New step =', hn)
-
-            hnp = min(hn, min(hbuffer, hstability))  # makes minimal step from accuracy, stability and old step
-            print("Current step",hn)
-            # hn = hnp
-
-            t += hn
             print("Current time", t)
-            # Next stage calculating
-            for i in range(matrix_size):
-
-                k3[i, 0] = hn * dxdt(A, x, b)[i, 0]
-
             endtime = t;
 
-    end_time = datetime.now()
-    print('Duration: {}'.format(end_time - start_time))
-    return iterations, endtime, xprint_s
+        end_time = datetime.now()
+        print('Duration: {}'.format(end_time - start_time))
+
+        return iterations, endtime, xprint_s
 
 
 matrix_size = 3
@@ -280,8 +304,8 @@ hbegin_falling_ball_angle_ball_step1 = hstabilitygetting_angle_ball_step1(F3_swi
 print("Starting stability step for angle ball extended ODE", hbegin_falling_ball_angle_ball_step1)
 time.sleep(5)
 
-
-#'''##Need integration extended ODE falling ball
+establish_step1_esposito_on = False
+'''##Need integration extended ODE falling ball
 iterations_establ_angle_step1,endtime_establ_angle_step1, yprint_s_establ_angle_step1 = rkf2stepcontrol(matrix_size,
                                                                                     dydx_Angleballbeforeeps
                                                                                     , A_Angleballbeforeeps,
@@ -300,7 +324,8 @@ iterations_establ_angle_step1,endtime_establ_angle_step1, yprint_s_establ_angle_
                                                                                     # 0.9,
                                                                                     predicate_function_establ,
                                                                                     F3_switchball_angle_step1,
-                                                                                    hstabilitygetting_angle_ball_step1,0.001)
+                                                                                    hstabilitygetting_angle_ball_step1,
+                                                                                    0.005,establish_step1_esposito_on)
 
 
 
@@ -338,7 +363,7 @@ ylabel("argument")
 xlabel("t")
 grid(True)
 show() # display
-#'''
+'''
 
 #Establishing Method for original
 #endtime_angle_ball_for_step2 = 2.37349620145370
@@ -400,7 +425,10 @@ jaceiglist_falling_angle_ball_step2 = list(JacobianF_falling_angle_ball_step2.ei
 hbegin_falling_ball_angle_ball_step2 = hstabilitygetting_angle_ball_step2(F3_switchball_angle_step2, [5.,5.])/4000
 print("Beginning step or original ODE by stability", hbegin_falling_ball_angle_ball_step2)
 
-#'''##Need integration original ODE angle ball
+
+
+establish_step2_esposito_on = False
+'''##Need integration original ODE angle ball
 iterations_establ_angle_step2,endtime_establ_angle_step2, yprint_s_establ_angle_step2 = rkf2stepcontrol(matrix_size,
                                                                                     dydx_Angleballaftereps
                                                                                     , A_Angleballaftereps,
@@ -413,7 +441,8 @@ iterations_establ_angle_step2,endtime_establ_angle_step2, yprint_s_establ_angle_
                                                                                     0.0000001,  # ТРЕБУЕМАЯ ТОЧНОСТЬ
                                                                                     predicate_function_establ,
                                                                                     F3_switchball_angle_step2,
-                                                                                    hstabilitygetting_angle_ball_step2,0.001)
+                                                                                    hstabilitygetting_angle_ball_step2,
+                                                                                    0.001,establish_step2_esposito_on)
 
 
 
@@ -438,7 +467,7 @@ ylabel("argument")
 xlabel("t")
 grid(True)
 show() # display
-#'''
+'''
 
 ystartlinearelersecondvarstep = Matrix([5, 5.,5.])  # x',Vx'
 heilersecond_angle_ball = 2 / 1000  # 2.E-3
@@ -478,8 +507,8 @@ def eilermethod_angle_ball(Alineareilersecond, ystartlinearelersecondvarstep, ga
     ystartlineareler_discrete_print_variablstep = zeros(3, 1)
     ##and (hweilervarstep_angle_ball > 0)
     while (ystartlinearelersecondvarstep[2, 0] > epsilon_eiler_second_angle_ball):  # g>eps
-        print("Inside Eiler angle ball")
-        print("Current time", endtime_eilermethodvariablestep)
+        #print("Inside Eiler angle ball")
+        #print("Current time", endtime_eilermethodvariablestep)
         ystartlinearelersecondvarstep[2, 0] = ystartlinearelersecondvarstep[0, 0]  # g = x
 
         hpeilersecondvarstep_angle_ball = (gammaeilersecond_angle_ball - 1) * ystartlinearelersecondvarstep[2, 0] \
@@ -489,9 +518,9 @@ def eilermethod_angle_ball(Alineareilersecond, ystartlinearelersecondvarstep, ga
 
 
         event_vector = ystartlinearelersecondvarstep[2, 0] / (-3 * VYold - 9.81 + VYold)
-        print("Hp by event func  and h input by user",hpeilersecondvarstep_angle_ball, heilersecond_angle_ball)
+        #print("Hp by event func  and h input by user",hpeilersecondvarstep_angle_ball, heilersecond_angle_ball)
         hweilersecondvarstep_angle_ball = min(hpeilersecondvarstep_angle_ball, heilersecond_angle_ball)  # hw = hp
-        print("Step after", hweilersecondvarstep_angle_ball)
+        #print("Step after", hweilersecondvarstep_angle_ball)
         endtime_eilermethodvariablestep = endtime_eilermethodvariablestep + hweilersecondvarstep_angle_ball
 
         Fi = Matrix([VYold, -3  * VYold - 9.81])
@@ -501,12 +530,12 @@ def eilermethod_angle_ball(Alineareilersecond, ystartlinearelersecondvarstep, ga
         VYold = ystartlinearelersecondvarstep[1, 0]  # vxold = vx
         ystartlineareler_discrete_print_variablstep = \
             ystartlineareler_discrete_print_variablstep.col_insert(1, Matrix([ystartlinearelersecondvarstep]))
-        print("Integrated parameter", ystartlinearelersecondvarstep)
+        #print("Integrated parameter", ystartlinearelersecondvarstep)
 
         h_for_output.append(hweilersecondvarstep_angle_ball)
         event_vect.append(event_vector)
         hweeee = hweeee.col_insert(1, Matrix([hweilersecondvarstep_angle_ball]))
-        print("Step vector",hweeee)
+        #print("Step vector",hweeee)
         if (ystartlinearelersecondvarstep[2, 0] <= epsilon_eiler_second_angle_ball):  # if g<=eps
 
             end_time = datetime.now()
@@ -576,12 +605,17 @@ def predicate_function_linear_xsecond(xstart,eps):
 
     return float(xstart[0]) < 0 + eps
 
+rkeiler_esposito_on = True
+
+A_Angleball_esposito = Matrix([k_angle_ball, g])  # смена Numpy матрицы на Sympy
+ystart_Angleball_esposito = Matrix([[5.], [5.]])  # xx,VV            #смена Numpy матрицы на Sympy
+dydx_Angleball_esposito = zeros(matrix_size, 1)
 
 #'''# Esposito method step control by event function, step got from Eiler method
 iterations_rkeiler_angle_step2,endtime_rkeiler_angle_step2, yprint_s_rkeiler_angle_step2 = rkf2stepcontrol(matrix_size,
-                                                                                    dydx_Angleballaftereps
-                                                                                    , A_Angleballaftereps,
-                                                                                    ystart_Angleballaftereps,
+                                                                                    dydx_Angleball_esposito
+                                                                                    , A_Angleball_esposito,
+                                                                                    ystart_Angleball_esposito,
                                                                                     b2x2, dxdt_y_establstep2,
                                                                                        hweilerbasedrungekutta,
                                                                                     0
@@ -591,7 +625,8 @@ iterations_rkeiler_angle_step2,endtime_rkeiler_angle_step2, yprint_s_rkeiler_ang
                                                                                     predicate_function_linear_xsecond,
                                                                                     F3_switchball_angle_step2,
                                                                                     hstabilitygetting_angle_ball_step2,
-                                                                                    hweilerbasedrungekutta)
+                                                                                    hweilerbasedrungekutta,
+                                                                                    rkeiler_esposito_on)
 
 
 yprint_s_rkeiler_angle_step2 = numpy.delete(yprint_s_rkeiler_angle_step2, 0, -1)
