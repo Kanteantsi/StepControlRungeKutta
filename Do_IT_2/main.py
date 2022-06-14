@@ -305,7 +305,7 @@ print("Starting stability step for angle ball extended ODE", hbegin_falling_ball
 time.sleep(5)
 
 establish_step1_esposito_on = False
-'''##Need integration extended ODE falling ball
+#'''##Need integration extended ODE falling ball
 iterations_establ_angle_step1,endtime_establ_angle_step1, yprint_s_establ_angle_step1 = rkf2stepcontrol(matrix_size,
                                                                                     dydx_Angleballbeforeeps
                                                                                     , A_Angleballbeforeeps,
@@ -318,7 +318,7 @@ iterations_establ_angle_step1,endtime_establ_angle_step1, yprint_s_establ_angle_
             #                                , 20, 0.1,predicate_function_establ_step1, F3, hstabilitygetting) #Старое
                                                                                     , 3.5,
                                                                                     # ВРЕМЯ, ЗА КОТОРОЕ ВЫЙДЕМ НА СТАЦИОНАР
-                                                                                    0.00001,  # ТРЕБУЕМАЯ ТОЧНОСТЬ
+                                                                                    0.000001,  # ТРЕБУЕМАЯ ТОЧНОСТЬ
                                                                                     # 0.000001, ДОЛГО
                                                                                     # 0.01, ЗАКАНЧИВАЕТ В 3.63, НЕ В НУЛЕ
                                                                                     # 0.9,
@@ -363,7 +363,7 @@ ylabel("argument")
 xlabel("t")
 grid(True)
 show() # display
-'''
+#'''
 
 #Establishing Method for original
 #endtime_angle_ball_for_step2 = 2.37349620145370
@@ -428,7 +428,7 @@ print("Beginning step or original ODE by stability", hbegin_falling_ball_angle_b
 
 
 establish_step2_esposito_on = False
-'''##Need integration original ODE angle ball
+#'''##Need integration original ODE angle ball
 iterations_establ_angle_step2,endtime_establ_angle_step2, yprint_s_establ_angle_step2 = rkf2stepcontrol(matrix_size,
                                                                                     dydx_Angleballaftereps
                                                                                     , A_Angleballaftereps,
@@ -467,7 +467,7 @@ ylabel("argument")
 xlabel("t")
 grid(True)
 show() # display
-'''
+#'''
 
 ystartlinearelersecondvarstep = Matrix([5, 5.,5.])  # x',Vx'
 heilersecond_angle_ball = 2 / 1000  # 2.E-3
