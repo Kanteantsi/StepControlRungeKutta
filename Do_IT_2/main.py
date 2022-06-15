@@ -1047,7 +1047,7 @@ f1_swpy_angle_ball_sqrt_est1 = 'arctg(x)'
 print(f1_swpx_angle_ball_step1)
 f1_swpz_angle_ball_sqrt_est1 = '0'
 print(f1_swpx_angle_ball_step1)
-f2_swpx_angle_ball_sqrt_est1 = '-25*(arctg(x)/(2*sqrt(x))+(sqrt(x)/(x*x+1))'
+f2_swpx_angle_ball_sqrt_est1 = '1/(x*x+1)'
 print(f2_swpx_angle_ball_step1)
 f2_swpy_angle_ball_sqrt_est1 = '0'
 print(f2_swpy_angle_ball_step1)
@@ -1057,7 +1057,7 @@ f3_swpx_angle_ball_sqrt_est1 = "1/(x*x+1)"
 print(f2_swpy_angle_ball_step1)
 f3_swpy_angle_ball_sqrt_est1 = "0"
 print(f2_swpy_angle_ball_step1)
-f3_swpz_angle_ball_sqrt_est1 = "(0)"
+f3_swpz_angle_ball_sqrt_est1 = "0"
 print(f3_swpz_angle_ball_step1)
 
 
