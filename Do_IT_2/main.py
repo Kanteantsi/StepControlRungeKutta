@@ -78,7 +78,7 @@ for i in range(len(jaceiglist)):
 
 hstability =  2 / (reduce(lambda x, y: abs(x) if abs(x) > abs(y) else abs(y), eigenlist))
 
-print('Шаг по устойчивости',hstability)
+print('Stability step for falling ball',hstability)
 
 
 
@@ -205,7 +205,7 @@ def rkf2stepcontrol(
                 #time.sleep(2)
 
             #print("Current steps",steps)
-            #print("Шаги", h_accuracy, hstability, halgebraic)
+            #print("Steps", h_accuracy, hstability, halgebraic)
             hn = (min(n for n in steps  if n>0))
             print("Final current step", hn)
 
@@ -222,11 +222,11 @@ matrix_size = 3
 k_angle_ball = 3
 g = 9.81
 
-A_Angleballbeforeeps = Matrix([k_angle_ball, g])  # смена Numpy матрицы на Sympy
-ystart_Angleballbeforeeps = Matrix([[5.], [5.],[0.]])  # xx,VV            #смена Numpy матрицы на Sympy
+A_Angleballbeforeeps = Matrix([k_angle_ball, g])
+ystart_Angleballbeforeeps = Matrix([[5.], [5.],[0.]])  # xx,VV
 dydx_Angleballbeforeeps = zeros(matrix_size, 1)
 
-def dxdt_y_establstep1(A_Angleballbeforeeps, ystart_Angleballbeforeeps, b2x2):  # система уравнений для проверки поиска точки переключения
+def dxdt_y_establstep1(A_Angleballbeforeeps, ystart_Angleballbeforeeps, b2x2):
 
     dydx_Angleballbeforeeps[0, 0] = ystart_Angleballbeforeeps[1, 0] * math.atan(ystart_Angleballbeforeeps[0, 0])
     dydx_Angleballbeforeeps[1, 0] = (-1 * A_Angleballbeforeeps[0, 0] * (ystart_Angleballbeforeeps[1, 0]) - 9.81)* math.atan(ystart_Angleballbeforeeps[0, 0])
@@ -292,7 +292,6 @@ def hstabilitygetting_angle_ball_step1(MatrixForYacobian, values):
         eq = float((eq).evalf())
         eigenlist.append(eq)
 
-    #print("Собственные числа", eigenlist)
     return  2 / (reduce(lambda x, y: abs(x) if abs(x) > abs(y) else abs(y), eigenlist))
 
 
@@ -312,16 +311,11 @@ iterations_establ_angle_step1,endtime_establ_angle_step1, yprint_s_establ_angle_
                                                                                     ystart_Angleballbeforeeps,
                                                                                     b2x2, dxdt_y_establstep1,
                                                                                     hbegin_falling_ball_angle_ball_step1,
-                                                                                    # НА СТАЦИОНАР,КАК НА КАРТИНКЕ
                                                                                     # hbegin_falling_ball_step1_alt,
                                                                                     0
-            #                                , 20, 0.1,predicate_function_establ_step1, F3, hstabilitygetting) #Старое
+            #                                , 20, 0.1,predicate_function_establ_step1, F3, hstabilitygetting)
                                                                                     , 3.5,
-                                                                                    # ВРЕМЯ, ЗА КОТОРОЕ ВЫЙДЕМ НА СТАЦИОНАР
-                                                                                    0.000001,  # ТРЕБУЕМАЯ ТОЧНОСТЬ
-                                                                                    # 0.000001, ДОЛГО
-                                                                                    # 0.01, ЗАКАНЧИВАЕТ В 3.63, НЕ В НУЛЕ
-                                                                                    # 0.9,
+                                                                                    0.000001,
                                                                                     predicate_function_establ,
                                                                                     F3_switchball_angle_step1,
                                                                                     hstabilitygetting_angle_ball_step1,
@@ -370,11 +364,10 @@ show() # display
 matrix_size = 2
 k_angle_ball = 3
 g = 9.81
-A_Angleballaftereps = Matrix([k_angle_ball, g])  # смена Numpy матрицы на Sympy
-ystart_Angleballaftereps = Matrix([[5.], [5.]])  # xx,VV            #смена Numpy матрицы на Sympy
+A_Angleballaftereps = Matrix([k_angle_ball, g])
 dydx_Angleballaftereps = zeros(matrix_size, 1)
 
-def dxdt_y_establstep2(A_Angleballaftereps, ystart_Angleballaftereps, b2x2):  # система уравнений для проверки поиска точки переключения
+def dxdt_y_establstep2(A_Angleballaftereps, ystart_Angleballaftereps, b2x2):
 
 
     dydx_Angleballaftereps[0, 0] = ystart_Angleballaftereps[1, 0]
@@ -424,7 +417,7 @@ jaceiglist_falling_angle_ball_step2 = list(JacobianF_falling_angle_ball_step2.ei
 
 hbegin_falling_ball_angle_ball_step2 = hstabilitygetting_angle_ball_step2(F3_switchball_angle_step2, [5.,5.])/4000
 print("Beginning step or original ODE by stability", hbegin_falling_ball_angle_ball_step2)
-
+ystart_Angleballaftereps = Matrix([[5.], [5.]])  # xx,VV
 
 
 establish_step2_esposito_on = False
@@ -438,7 +431,7 @@ iterations_establ_angle_step2,endtime_establ_angle_step2, yprint_s_establ_angle_
                                                                                     0
                                                                                     , endtime_angle_ball_for_step2,
                                                                                     #time from extended ODE
-                                                                                    0.0000001,  # ТРЕБУЕМАЯ ТОЧНОСТЬ
+                                                                                    0.0000001,
                                                                                     predicate_function_establ,
                                                                                     F3_switchball_angle_step2,
                                                                                     hstabilitygetting_angle_ball_step2,
@@ -562,7 +555,7 @@ argument2 = list(reversed(solutionlineareiler_angle_ball.row(1)))
 argument3 = list(reversed(solutionlineareiler_angle_ball.row(2)))
 argument4 = list(reversed(event_vect))
 
-print('Время окончания', endtime_eiler_angle_ball)
+print('End time for eiler', endtime_eiler_angle_ball)
 
 t = linspace(0, float(endtime_eiler_angle_ball), solutionlineareiler_angle_ball.shape[1])
 
@@ -595,9 +588,9 @@ grid(True)
 show() # display
 
 hweilerbasedrungekutta = hw_pivot_angle_ball[-1]
-print("Шаг на основе метода Эйлера", hweilerbasedrungekutta)
+print("Eiler method based Step", hweilerbasedrungekutta)
 
-#'''#МЕТОД ЭЙЛЕРА
+#'''#Eiler method
 
 #hweilerbasedrungekutta = 1.39E-5
 
@@ -607,8 +600,8 @@ def predicate_function_linear_xsecond(xstart,eps):
 
 rkeiler_esposito_on = True
 
-A_Angleball_esposito = Matrix([k_angle_ball, g])  # смена Numpy матрицы на Sympy
-ystart_Angleball_esposito = Matrix([[5.], [5.]])  # xx,VV            #смена Numpy матрицы на Sympy
+A_Angleball_esposito = Matrix([k_angle_ball, g])
+ystart_Angleball_esposito = Matrix([[5.], [5.]])
 dydx_Angleball_esposito = zeros(matrix_size, 1)
 
 #'''# Esposito method step control by event function, step got from Eiler method
@@ -904,8 +897,8 @@ def eilermethod_angle_ball_sqrt(Alineareilersecond, ystartlinearelersecondvarste
             return ystartlineareler_discrete_print_variablstep_sqrt, endtime_eilermethodvariablestep_sqrt,h_for_output_sqrt,event_vect_sqrt
 
 
-A_Angleball_sqrt = Matrix([k_angle_ball, g])  # СЃРјРµРЅР° Numpy РјР°С‚СЂРёС†С‹ РЅР° Sympy
-ystart_Angleball_sqrt = Matrix([[5.], [5.],[5.]])  # xx,VV            #СЃРјРµРЅР° Numpy РјР°С‚СЂРёС†С‹ РЅР° Sympy
+A_Angleball_sqrt = Matrix([k_angle_ball, g])
+ystart_Angleball_sqrt = Matrix([[5.], [5.],[5.]])
 
 #'''#Eiler method call
 solutionlineareiler_angle_sqrt, endtime_eiler_angle_sqrt,hw_pivot_angle_sqrt,event_vect_sqrt = eilermethod_angle_ball_sqrt(A_Angleball_sqrt,
@@ -925,7 +918,7 @@ argument2 = list(reversed(solutionlineareiler_angle_sqrt.row(1)))
 argument3 = list(reversed(solutionlineareiler_angle_sqrt.row(2)))
 argument4 = list(reversed(event_vect_sqrt))
 
-print('Р’СЂРµРјСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ', endtime_eiler_angle_sqrt)
+print('Time of end for Eiler sqrt', endtime_eiler_angle_sqrt)
 
 t = linspace(0, float(endtime_eiler_angle_sqrt), solutionlineareiler_angle_sqrt.shape[1])
 
@@ -958,7 +951,7 @@ grid(True)
 show() # display
 
 hweilerbasedrungekutta_sqrt = hw_pivot_angle_sqrt[-1]
-print("РЁР°Рі РЅР° РѕСЃРЅРѕРІРµ РјРµС‚РѕРґР° РР№Р»РµСЂР°", hweilerbasedrungekutta_sqrt)
+print("Step,based on Eiler, with sqrt°", hweilerbasedrungekutta_sqrt)
 
 
 #'''#Eiler method SQRT
@@ -983,7 +976,7 @@ def dxdt_y_sqrt(A_Angleball_esposito_sqrt, ystart_Angleball_esposito_sqrt, b2x2)
     return dydx_Angleball_esposito_sqrt
 
 
-'''# Esposito method step control by event function SQRT, step got from Eiler method
+#'''# Esposito method step control by event function SQRT, step got from Eiler method
 iterations_rkeiler_angle_sqrt,endtime_rkeiler_angle_sqrt, yprint_s_rkeiler_angle_sqrt = rkf2stepcontrol(matrix_size,
                                                                                     dydx_Angleball_esposito_sqrt
                                                                                     , A_Angleball_esposito_sqrt,
@@ -1019,24 +1012,23 @@ ylabel("argument")
 xlabel("t")
 grid(True)
 show() # display
-'''#Esposito method end
+#'''#Esposito method end
 
 #'''#Establishing Method sqrt step1 begin
 matrix_size_sqrt_est1 = 3
 k_angle_ball = 3
 g = 9.81
 
-A_Angleball_sqrt_est1 = Matrix([k_angle_ball, g])  # СЃРјРµРЅР° Numpy РјР°С‚СЂРёС†С‹ РЅР° Sympy
-ystart_Angleball_sqrt_est1 = Matrix([[5.], [5.],[0.]])  # xx,VV            #СЃРјРµРЅР° Numpy РјР°С‚СЂРёС†С‹ РЅР° Sympy
+A_Angleball_sqrt_est1 = Matrix([k_angle_ball, g]) # смена Numpy матрицы на Sympy
+ystart_Angleball_sqrt_est1 = Matrix([[5.], [5.],[0.]]) # xx,VV #смена Numpy матрицы на Sympy
 dydx_Angleball_sqrt_est1 = zeros(matrix_size_sqrt_est1, 1)
 
-def dxdt_y_establ_sqrt_est1(A_Angleball_sqrt_est1, ystart_Angleball_sqrt_est1, b2x2):  # СЃРёСЃС‚РµРјР° СѓСЂР°РІРЅРµРЅРёР№ РґР»СЏ РїСЂРѕРІРµСЂРєРё РїРѕРёСЃРєР° С‚РѕС‡РєРё РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ
+def dxdt_y_establ_sqrt_est1(A_Angleball_sqrt_est1, ystart_Angleball_sqrt_est1, b2x2): # система уравнений для проверки поиска точки переключения
 
     dydx_Angleball_sqrt_est1[0, 0] = ystart_Angleball_sqrt_est1[1, 0] * math.atan(ystart_Angleball_sqrt_est1[0, 0])
     dydx_Angleball_sqrt_est1[1, 0] = (-25*math.sqrt(ystart_Angleball_sqrt_est1[0,0]))* math.atan(ystart_Angleball_sqrt_est1[0, 0])
     dydx_Angleball_sqrt_est1[2, 0] = math.atan(ystart_Angleball_sqrt_est1[0, 0])
     return dydx_Angleball_sqrt_est1
-
 
 J1_switchball_angle_ball_step1 = sympy.Function('J')(x, y, z)
 
@@ -1047,7 +1039,7 @@ f1_swpy_angle_ball_sqrt_est1 = 'arctg(x)'
 print(f1_swpx_angle_ball_step1)
 f1_swpz_angle_ball_sqrt_est1 = '0'
 print(f1_swpx_angle_ball_step1)
-f2_swpx_angle_ball_sqrt_est1 = '1/(x*x+1)'
+f2_swpx_angle_ball_sqrt_est1 = '-25*((arctg(x))/(2*sqrt(x))+(sqrt(x))/(x*x+1))'
 print(f2_swpx_angle_ball_step1)
 f2_swpy_angle_ball_sqrt_est1 = '0'
 print(f2_swpy_angle_ball_step1)
@@ -1060,14 +1052,9 @@ print(f2_swpy_angle_ball_step1)
 f3_swpz_angle_ball_sqrt_est1 = "0"
 print(f3_swpz_angle_ball_step1)
 
-
-
-
 F3_switchball_angle_sqrt_est1 = Matrix([[f1_swpx_angle_ball_sqrt_est1, f1_swpy_angle_ball_sqrt_est1, f1_swpz_angle_ball_sqrt_est1],
-                                    [f2_swpx_angle_ball_sqrt_est1, f2_swpy_angle_ball_sqrt_est1, f2_swpz_angle_ball_sqrt_est1],
-                                    [f3_swpx_angle_ball_sqrt_est1, f3_swpy_angle_ball_sqrt_est1, f3_swpz_angle_ball_sqrt_est1]])
-
-
+[f2_swpx_angle_ball_sqrt_est1, f2_swpy_angle_ball_sqrt_est1, f2_swpz_angle_ball_sqrt_est1],
+[f3_swpx_angle_ball_sqrt_est1, f3_swpy_angle_ball_sqrt_est1, f3_swpz_angle_ball_sqrt_est1]])
 
 print("Matrix for eigenvalues ",F3_switchball_angle_sqrt_est1)
 
@@ -1093,17 +1080,13 @@ def hstabilitygetting_angle_ball_sqrt_est1(MatrixForYacobian, values):
         eq = sympy.S(str(jaceiglist[i]))
         eq = eq.subs(sympy.Function('arctg'), sympy.atan)
         eq = eq.subs(sympy.Function('sqrt'), math.sqrt)
-        eq = float((eq).evalf())
+        eq = (((eq).evalf()))
         eigenlist.append(eq)
 
-    #print("РЎРѕР±СЃС‚РІРµРЅРЅС‹Рµ С‡РёСЃР»Р°", eigenlist)
-    return  2 / (reduce(lambda x, y: abs(x) if abs(x) > abs(y) else abs(y), eigenlist))
-
-
+    return 2 / (reduce(lambda x, y: abs(x) if abs(x) > abs(y) else abs(y), eigenlist))
 
 jaceiglist_falling_angle_ball_sqrt_est1 = list(JacobianF_falling_angle_ball_sqrt_est1.eigenvals())
-hbegin_falling_ball_angle_ball_sqrt_est1 = hstabilitygetting_angle_ball_sqrt_est1(F3_switchball_angle_sqrt_est1, [5,5,0])/40000
-
+hbegin_falling_ball_angle_ball_sqrt_est1 = hstabilitygetting_angle_ball_sqrt_est1(F3_switchball_angle_sqrt_est1, [5,5,0])/40
 
 print("Starting stability step for angle ball extended ODE", hbegin_falling_ball_angle_ball_sqrt_est1)
 time.sleep(5)
@@ -1111,29 +1094,18 @@ time.sleep(5)
 establish_sqrt_est1_esposito_on = False
 #'''##Need integration extended ODE falling ball
 iterations_establ_angle_sqrt_est1,endtime_establ_angle_sqrt_est1, yprint_s_establ_angle_sqrt_est1 = rkf2stepcontrol(matrix_size_sqrt_est1,
-                                                                                    dydx_Angleball_sqrt_est1
-                                                                                    , A_Angleball_sqrt_est1,
-                                                                                    ystart_Angleball_sqrt_est1,
-                                                                                    b2x2, dxdt_y_establ_sqrt_est1,
-                                                                                    hbegin_falling_ball_angle_ball_sqrt_est1,
-                                                                                    # РќРђ РЎРўРђР¦РРћРќРђР ,РљРђРљ РќРђ РљРђР РўРРќРљР•
-                                                                                    # hbegin_falling_ball_step1_alt,
-                                                                                    0
-            #                                , 20, 0.1,predicate_function_establ_step1, F3, hstabilitygetting) #РЎС‚Р°СЂРѕРµ
-                                                                                    , 2,
-                                                                                    # Р’Р Р•РњРЇ, Р—Рђ РљРћРўРћР РћР• Р’Р«Р™Р”Р•Рњ РќРђ РЎРўРђР¦РРћРќРђР
-                                                                                    0.000001,  # РўР Р•Р‘РЈР•РњРђРЇ РўРћР§РќРћРЎРўР¬
-                                                                                    # 0.000001, Р”РћР›Р“Рћ
-                                                                                    # 0.01, Р—РђРљРђРќР§РР’РђР•Рў Р’ 3.63, РќР• Р’ РќРЈР›Р•
-                                                                                    # 0.9,
-                                                                                    predicate_function_establ,
-                                                                                    F3_switchball_angle_sqrt_est1,
-                                                                                    hstabilitygetting_angle_ball_sqrt_est1,
-                                                                                    0.005,establish_sqrt_est1_esposito_on)
-
-
-
-
+                                                                                                                    dydx_Angleball_sqrt_est1
+                                                                                                                    , A_Angleball_sqrt_est1,
+                                                                                                                    ystart_Angleball_sqrt_est1,
+                                                                                                                    b2x2, dxdt_y_establ_sqrt_est1,
+                                                                                                                    hbegin_falling_ball_angle_ball_sqrt_est1,
+                                                                                                                    0
+                                                                                                                    , 2,
+                                                                                                                    0.000001,
+                                                                                                                    predicate_function_establ,
+                                                                                                                    F3_switchball_angle_sqrt_est1,
+                                                                                                                    hstabilitygetting_angle_ball_sqrt_est1,
+                                                                                                                    0.005,establish_sqrt_est1_esposito_on)
 
 #xprint_s_establ_angle_step1(0)
 print("Shape of integrated matrix",yprint_s_establ_angle_sqrt_est1.shape)
@@ -1147,13 +1119,12 @@ print("Integration end time",endtime_angle_ball_for_step2)
 #argument2 = list(reversed(yprint_s_establ_angle_step1[1]))
 #argument3 = list(reversed(yprint_s_establ_angle_step1[2]))
 
-
 argument1 = list((yprint_s_establ_angle_sqrt_est1[0]))
 argument2 = list((yprint_s_establ_angle_sqrt_est1[1]))
 argument3 = list((yprint_s_establ_angle_sqrt_est1[2]))
 
 print('Amount of iterations',iterations_establ_angle_sqrt_est1)
-print('Р’СЂРµРјСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ', endtime_establ_angle_sqrt_est1)
+print('Время окончания', endtime_establ_angle_sqrt_est1)
 
 t = linspace(0, float(endtime_establ_angle_sqrt_est1), yprint_s_establ_angle_sqrt_est1.shape[1])
 
@@ -1176,15 +1147,15 @@ show() # display
 matrix_size_sqrt_est2 = 2
 k_angle_ball = 3
 g = 9.81
-A_Angleball_sqrt_est2 = Matrix([k_angle_ball, g])  # СЃРјРµРЅР° Numpy РјР°С‚СЂРёС†С‹ РЅР° Sympy
-ystart_Angleball_sqrt_est2 = Matrix([[5.], [5.]])  # xx,VV            #СЃРјРµРЅР° Numpy РјР°С‚СЂРёС†С‹ РЅР° Sympy
+A_Angleball_sqrt_est2 = Matrix([k_angle_ball, g])
+ystart_Angleball_sqrt_est2 = Matrix([[5.], [5.]])
 dydx_Angleball_sqrt_est2 = zeros(matrix_size, 1)
 
-def dxdt_y_sqrt_est2(A_Angleball_sqrt_est2, ystart_Angleball_sqrt_est2, b2x2):  # СЃРёСЃС‚РµРјР° СѓСЂР°РІРЅРµРЅРёР№ РґР»СЏ РїСЂРѕРІРµСЂРєРё РїРѕРёСЃРєР° С‚РѕС‡РєРё РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ
+def dxdt_y_sqrt_est2(A_Angleball_sqrt_est2, ystart_Angleball_sqrt_est2, b2x2):
 
 
     dydx_Angleball_sqrt_est2[0, 0] = ystart_Angleball_sqrt_est2[1, 0]
-    dydx_Angleball_sqrt_est2[1, 0] = (-25 * math.sqrt(ystart_Angleball_sqrt_est2[0, 0]))  ##Vy' = -k*Vy-g
+    dydx_Angleball_sqrt_est2[1, 0] = (-25 * math.sqrt(ystart_Angleball_sqrt_est2[0, 0]))
 
     return dydx_Angleball_sqrt_est2
 
@@ -1244,12 +1215,11 @@ iterations_establ_angle_sqrt_est2,endtime_establ_angle_sqrt_est2, yprint_s_estab
                                                                                     0
                                                                                     , endtime_angle_ball_for_step2,
                                                                                     #time from extended ODE
-                                                                                    0.00001,  # РўР Р•Р‘РЈР•РњРђРЇ РўРћР§РќРћРЎРўР¬
+                                                                                    0.00001,
                                                                                     predicate_function_establ,
                                                                                     F3_switchball_angle_sqrt_est2,
                                                                                     hstabilitygetting_angle_ball_sqrt_est2,
                                                                                     0.001,establish_sqrt_est2_esposito_on)
-
 
 
 
